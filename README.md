@@ -1,6 +1,6 @@
 # web-teleprompter
 
-A teleprompter for phones that records from the browser, with the front camera behind like a telepromper scrolling text.
+A teleprompter for phones that records from the browser, with the front camera behind like a teleprompter scrolling text.
 
 Open it on a phone, prop the phone up, press Play to read or Record to film. The script scrolls over the camera picture right under the lens so your eyes stay near it. The take is handed to the phone's share sheet.
 
