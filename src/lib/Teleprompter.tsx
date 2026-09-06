@@ -2,20 +2,12 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import styles from './Teleprompter.module.css'
 import { extensionFor, isIOS, openFrontCamera, pickMimeType, planRecordingStream } from './camera'
 
-// A full-screen teleprompter for phones, with an in-browser Record mode.
-//
-// READ mode: big type, high contrast, controls along the bottom where thumbs
-// are, tap the text to pause, a wake lock so the screen doesn't dim mid-take,
-// mirror mode for a beam-splitter rig.
-//
-// RECORD mode: the front camera goes BEHIND the script. The script scrolls in a
-// translucent band over the picture, right under the lens, with a 3-2-1
-// countdown, Record/Stop and a timer. The take is handed to the phone's share
-// sheet (Save Video / TikTok / Instagram) or downloaded. Nothing leaves the
-// phone.
-//
-// Scrolling is driven by requestAnimationFrame at a px/second rate set by the
-// speed slider, so it is smooth on phones and independent of frame rate.
+// A full screen teleprompter for phones with a Record mode.
+// Read mode: big type, tap to pause, wake lock, mirror for a prompter glass.
+// Record mode: the front camera goes behind the script. The take goes to the
+// share sheet or a download. Nothing leaves the phone.
+// Scrolling runs on requestAnimationFrame at px per second, so it is smooth
+// on phones and does not depend on frame rate.
 
 const MIN_SPEED = 0.4
 const MAX_SPEED = 3
@@ -40,7 +32,7 @@ export type TeleprompterProps = {
   title: string
   /** The script, plain text. Line breaks are kept. */
   text: string
-  /** Optional version with [delivery cues] in square brackets; toggled with the Cues button. */
+  /** Optional version with [delivery cues] in square brackets, toggled with the Cues button. */
   cueText?: string
   /** Start with cues showing. */
   initialCues?: boolean
@@ -82,9 +74,8 @@ export function Teleprompter({ title, text, cueText, editable = false, onSaveLin
   const mimeRef = useRef<string | undefined>(undefined)
   const timerRef = useRef<number | null>(null)
 
-  // Entering Record (and coming back to idle after a take): the text goes back
-  // below the screen. Done after the next frame and again a moment later once
-  // the camera has attached, because each layout can move the scroll position.
+  // Entering Record: put the text back below the screen, once now and once
+  // after the camera has attached, because both layouts move the scroll.
   useEffect(() => {
     if (mode !== 'record' || rec !== 'idle') return
     const reset = () => {
@@ -182,6 +173,8 @@ export function Teleprompter({ title, text, cueText, editable = false, onSaveLin
   }, [])
 
   // Attach the live stream whenever the live <video> is on screen.
+  // First version set v.srcObject inside enterRecord(). That broke after
+  // "Record again", because the element remounts when the preview goes away.
   useEffect(() => {
     if (mode !== 'record' || rec === 'done') return
     const v = videoRef.current
@@ -231,6 +224,9 @@ export function Teleprompter({ title, text, cueText, editable = false, onSaveLin
     setFontStep(1)
   }
 
+  // Earlier: the prompter opened already playing. Readers missed the first
+  // line every time, so it now opens paused and the reader starts it.
+  //   const [playing, setPlaying] = useState(true)
   const restart = useCallback(() => {
     const el = scrollerRef.current
     if (el) el.scrollTop = 0
@@ -310,8 +306,9 @@ export function Teleprompter({ title, text, cueText, editable = false, onSaveLin
   async function shareOrSave() {
     if (!take) return
     const name = `${safeBase(title)}.${take.ext}`
-    // Plain container MIME, no codec parameters: the share sheet decides what
-    // it can do from the type, and "video/mp4;codecs=..." is not "video/mp4" to it.
+    // Plain container MIME. The share sheet does not treat a type with codec
+    // parameters as video/mp4.
+    //   const file = new File([take.blob], name, { type: take.blob.type })
     const type = take.ext === 'mp4' ? 'video/mp4' : 'video/webm'
     const file = new File([take.blob], name, { type })
     const nav = navigator as Navigator & { canShare?: (d: { files: File[] }) => boolean }
@@ -334,7 +331,7 @@ export function Teleprompter({ title, text, cueText, editable = false, onSaveLin
       isIOS()
         ? 'Saved to Files. Open Files, tap the video, then the share icon, then Save Video to put it in Photos.'
         : take.ext === 'webm'
-          ? 'Saved to Downloads as .webm. TikTok and Instagram may not accept it directly; open it in Google Photos, which converts it on share.'
+          ? 'Saved to Downloads as .webm. TikTok and Instagram may not accept it directly. Open it in Google Photos, which converts it on share.'
           : 'Saved to Downloads. Google Photos will pick it up, or share it from your Files app.',
     )
   }

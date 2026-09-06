@@ -1,11 +1,7 @@
-/* Teleprompter: a black room with paper-white type. Self-contained; no host tokens needed. */
+/* Teleprompter: a black room with paper-white type. Self-contained, no host tokens needed. */
 
 .overlay {
-  /* The prompter is always a black room. Its own token values, so every
-     control inside reads paper-on-black whatever the app's stage is. */
-  /* These mirror the catalog world's meanings, which this file was written
-     against: ink is the dark ground, stamp-ink the paper text, rule-soft a
-     light line. */
+  /* Always a black room. Its own tokens, so it reads the same on any page. */
   --ink: #0f0f11;
   --ink-soft: #cfccc2;
   --ink-faint: #9c988e;
@@ -18,11 +14,11 @@
   --stamp-soft: #ffc24d;
   --live: #ffb020;
   --live-ink: #141311;
-  /* The app shell swaps the label font for Public Sans; the prompter was
+  /* The app shell swaps the label font for Public Sans. The prompter was
      laid out for Courier's narrower caps, so it keeps Courier. Otherwise the
      control bar wraps to two rows on a phone and pushes the layout about. */
   --font-stamp: ui-monospace, 'Courier New', monospace;
-  /* Layout tokens the component uses; defined here so it needs nothing from the host page. */
+  /* Layout tokens the component uses, defined here so it needs nothing from the host page. */
   --space-1: 0.375rem;
   --space-2: 0.625rem;
   --space-3: 1rem;
@@ -43,7 +39,7 @@
   display: flex;
   flex-direction: column;
   /* Solid. A near-transparent ground let the Home page show through the
-     words on an iPhone ; the sizing comes from the
+     words on an iPhone. The sizing comes from the
      explicit 100dvh above, not from transparency. */
   background: #050506;
   color: #f3f1ea;
@@ -92,9 +88,7 @@
   position: relative;
   flex: 1;
   overflow-y: auto;
-  /* The browser must not "helpfully" keep the text in view when the band
-     changes size (entering Record, camera attaching): that undid the reset
-     to the empty lead and put the first line at the top of the band. */
+  /* Stop the browser re-anchoring the text when the band resizes. */
   overflow-anchor: none;
   /* The lead and tail spacers are sized against THIS band, not their
      parent paragraph block (whose height is auto, which is why a percentage
@@ -104,12 +98,12 @@
   -webkit-overflow-scrolling: touch;
   cursor: pointer;
   /* Reading line: a faint rule a third of the way down, where the eye rests
-     while the text moves past. Pure decoration; no content. */
+     while the text moves past. Pure decoration, no content. */
   background:
     linear-gradient(to bottom, transparent calc(33% - 1px), rgba(201, 106, 83, 0.45) calc(33% - 1px), rgba(201, 106, 83, 0.45) 33%, transparent 33%);
 }
 
-.mirror .text {
+.mirror.text {
   transform: scaleX(-1);
 }
 
@@ -126,18 +120,18 @@
 }
 
 /* Three sizes, all large: a phone at arm's length needs 26px+ to read
-   without squinting; a laptop on a desk is fine bigger still. */
+   without squinting. A laptop on a desk is fine bigger still. */
 .size0 { font-size: clamp(1.375rem, 4.5vw, 2rem); }
 .size1 { font-size: clamp(1.75rem, 6vw, 2.75rem); }
 .size2 { font-size: clamp(2.25rem, 8vw, 3.5rem); }
 
 /* The text starts below the screen and rises into view from the bottom,
    like credits, so nothing is on screen before the reader has read it
-   . A full-band lead does that in both modes.
+. A full-band lead does that in both modes.
    The tail lets the last line scroll up to the reading rule. */
 /* One line's worth short of a full screen, so the first line peeks up from
    the bottom edge and the reader knows there is something there. The lead
-   sits inside .text, so 1em is the reading size at any font step. */
+   sits inside.text, so 1em is the reading size at any font step. */
 .lead { height: calc(100cqh - 1.5em); }
 .tail { height: 70cqh; }
 
@@ -236,11 +230,11 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .scroller { scroll-behavior: auto; }
+.scroller { scroll-behavior: auto; }
 }
 
-/* ── Record mode  ────────────────────────────────────────────────────
-   The camera fills the screen; the script becomes a translucent band pinned
+/* ── Record mode ────────────────────────────────────────────────────
+   The camera fills the screen. The script becomes a translucent band pinned
    to the top, right under the lens, so the eyes stay near it. Controls keep
    their place along the bottom. */
 
@@ -250,36 +244,36 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  /* Selfie-style preview so it feels like a mirror; the recording itself is
+  /* Selfie-style preview so it feels like a mirror. The recording itself is
      not flipped. */
   transform: scaleX(-1);
   background: var(--ink);
 }
 
-.recordMode .top,
-.recordMode .controls {
+.recordMode.top,
+.recordMode.controls {
   position: relative;
   z-index: 2;
 }
 
-.recordMode .controls {
+.recordMode.controls {
   margin-top: auto;
 }
 
-.recordMode .top,
-.recordMode .controls {
+.recordMode.top,
+.recordMode.controls {
   background: rgba(32, 28, 20, 0.72);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
 }
 
-.recordMode .scroller {
+.recordMode.scroller {
   position: relative;
   z-index: 2;
   /* The text covers the WHOLE screen between the REC bar and the controls,
-     scrolling over the camera picture exactly as it does in read mode
-     . A plain dark scrim keeps the words legible
-     and the camera visible through it; no blur, so the framing still reads. */
+     scrolling over the camera picture exactly as it does in read mode.
+     A plain dark scrim keeps the words legible
+     and the camera visible through it, no blur, so the framing still reads. */
   margin-top: 0;
   flex: 1 1 auto;
   max-height: none;
@@ -289,10 +283,10 @@
     rgba(10, 9, 8, 0.5);
 }
 
-/* Record mode rises from the bottom too; the tail matches read mode. */
-.recordMode .tail { height: 70cqh; }
+/* Record mode rises from the bottom too. The tail matches read mode. */
+.recordMode.tail { height: 70cqh; }
 
-.recordMode .text {
+.recordMode.text {
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
 }
 
@@ -378,8 +372,8 @@ a.ctl {
   object-fit: contain;
 }
 
-/* ── Pencil in the prompter  ─────────────────────────────────────
-   While paused, each line is touchable; the editor docks above the
+/* ── Pencil in the prompter ─────────────────────────────────────
+   While paused, each line is touchable. The editor docks above the
    controls so thumbs reach it at the stand. */
 
 .pLine {
@@ -446,23 +440,23 @@ a.ctl {
 /* Phones: a compact control bar, two rows at most, so the band keeps the
    screen. */
 @media (max-width: 40rem) {
-  .controls {
+.controls {
     gap: 0.35rem;
     padding: 0.4rem 0.5rem calc(0.4rem + env(safe-area-inset-bottom, 0px));
   }
-  .primary,
-  .ctl {
+.primary,
+.ctl {
     min-height: 40px;
     padding: 0.35rem 0.6rem;
     font-size: 0.72rem;
   }
-  .primary {
+.primary {
     min-width: 5rem;
   }
-  .speed {
+.speed {
     flex: 1 1 7rem;
   }
-  .speed input {
+.speed input {
     min-height: 24px;
   }
 }

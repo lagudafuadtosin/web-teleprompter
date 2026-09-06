@@ -1,14 +1,14 @@
 # web-teleprompter
 
-A teleprompter for phones that records the take in the browser, with the front camera behind the script.
+A teleprompter for phones that records from the browser, with the front camera behind like a telepromper scrolling text.
 
-Open it on a phone, prop the phone up, press Play to read or Record to film. The script scrolls over the camera picture right under the lens so your eyes stay near it. The take is handed to the phone's share sheet (Save Video, TikTok, Instagram) or downloaded. Nothing is uploaded anywhere. There is no server.
+Open it on a phone, prop the phone up, press Play to read or Record to film. The script scrolls over the camera picture right under the lens so your eyes stay near it. The take is handed to the phone's share sheet.
 
 Built for [Postbarrel](https://postbarrel.com), where the script comes from an interview with you, and released on its own because the camera part cost several nights and the fixes deserve to be findable.
 
 ## Why this exists: the iPhone portrait problem
 
-If you have ever tried to record a portrait video from the front camera in a mobile browser and got a sideways, zoomed-in file, this is for you. Three things are true on real phones in 2026 and none of them are in the docs:
+If you have ever tried to record a portrait video from the front camera in a mobile browser and got a sideways, zoomed in file, then this is for you. Three things are true on real phones in 2026 and none of them are in the docs:
 
 1. **Ask for the camera in landscape numbers even when you want portrait.** Requesting `{ width: 1080, height: 1920 }` makes iOS Safari and Android Chrome hand back the sensor's wide 1920x1080 preset, unrotated. Requesting `{ width: 1920, height: 1080 }` lets the phone pick the preset and rotate the picture to the way it is held. This is what the WebRTC samples do. Read them before theorising.
 2. **Do not trust the track's reported size.** On iOS 18 the video track reports the sensor buffer (1920x1080) while the frame the browser draws is the rotated portrait picture, and the rotation flag that older iOS wrote into recordings is gone (Apple Developer Forums thread 786803). `measureDrawnFrame()` probes the real picture by drawing one frame onto a 16 pixel canvas and checking which way it extends.
@@ -32,10 +32,10 @@ import { Teleprompter } from './lib'
 <Teleprompter
   title="My take"
   text={script}                 // plain text, line breaks kept
-  cueText={scriptWithCues}      // optional: same text with [delivery cues] in brackets
+  cueText={scriptWithCues}      // optional: same text with [delivery cues] in brackets (used in the postbarrel site)
   initialCues={false}
   editable                      // tap a line while paused to fix it
-  onSaveLine={async (i, line) => { /* persist; return true on success */ return true }}
+  onSaveLine={async (i, line) => { /* persist it, then return true on success */ return true }}
   onClose={() => setOpen(false)}
 />
 ```
