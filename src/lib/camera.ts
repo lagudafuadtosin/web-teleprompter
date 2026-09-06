@@ -5,7 +5,7 @@
 export type DrawnFrame = { w: number; h: number }
 
 // Which way does the picture actually extend when this <video> is drawn?
-// On iOS 18 the track says 1920x1080 while the browser draws a portrait
+// On iOS 26.6 and on Android Chrome the track says 1920x1080 while the browser draws a portrait
 // frame, and the old rotation flag is gone (Apple forums thread 786803).
 // So we draw one frame onto a 16px canvas and look at where the paint lands.
 export function measureDrawnFrame(video: HTMLVideoElement, reportedW: number, reportedH: number): DrawnFrame | null {
@@ -108,13 +108,13 @@ export type RecordingPlan = {
 
 // Decide what to record.
 //   raw: portrait picture and the track agrees. Best quality.
-//   canvas-whole: portrait picture but the track says landscape (iOS 18).
+//   canvas-whole: portrait picture but the track says landscape (iOS 26.6, Android Chrome).
 //     The recorder would write the sideways buffer, so draw the picture to a
 //     canvas at its own size and record that.
 //   canvas-crop: wide picture on a portrait screen. Record the centre 9:16.
 export function planRecordingStream(liveVideo: HTMLVideoElement, stream: MediaStream): RecordingPlan {
   // First version. Always cropped the centre 9:16 out of the reported size.
-  // On iOS 18 that cut a 608x1080 slice out of a picture that was already
+  // On iOS 26.6 and Android that cut a 608x1080 slice out of a picture that was already
   // portrait, a 3x zoom of an eye and a nose.
   //   const W = Math.round((st.height * 9) / 16)
   //   plan = { W, H: st.height, sx: Math.round((st.width - W) / 2), sw: W }

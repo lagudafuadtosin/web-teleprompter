@@ -35,7 +35,7 @@ That is what the WebRTC samples do, which I found out after two nights, not befo
 
 ## Wrong theory two: the rotation is in the metadata
 
-On iOS 17 and earlier, a recording made this way came out as a landscape buffer with a `displaymatrix` rotation of minus 90 degrees in the file. Players honoured it. On iOS 18 that flag is gone. The file is the sideways buffer and nothing tells the player to turn it. There is an [Apple Developer Forums thread](https://developer.apple.com/forums/thread/786803) with people finding the same thing.
+On older iOS, a recording made this way came out as a landscape buffer with a `displaymatrix` rotation of minus 90 degrees in the file. Players honoured it. On iOS 26.6, which is what my iPhone runs, that flag is gone, and Android Chrome gave me the same sideways file. The file is the sideways buffer and nothing tells the player to turn it. There is an [Apple Developer Forums thread](https://developer.apple.com/forums/thread/786803) with people finding the same thing.
 
 I spent a while looking for a way to read the rotation off the track. There is nothing to read. `getSettings()` gives you width 1920 and height 1080 and that is that.
 
@@ -67,14 +67,14 @@ Draw one frame at natural size, scaled down onto a sixteen pixel square, and see
 
 ## Wrong theory three: crop everything to 9:16
 
-Before I had the probe, I recorded through a canvas that always cut the centre 9:16 out of the reported size. On iOS 18 the picture was already portrait, so that cut a 608 by 1080 slice out of a 1080 by 1920 frame. A three times zoom of an eye and a nose. That was the "zoomed in" half of the bug, and it was entirely mine.
+Before I had the probe, I recorded through a canvas that always cut the centre 9:16 out of the reported size. On iOS 26.6 and on Android the picture was already portrait, so that cut a 608 by 1080 slice out of a 1080 by 1920 frame. A three times zoom of an eye and a nose. That was the "zoomed in" half of the bug, and it was entirely mine.
 
 ## The fix: three cases
 
 With the probe you can decide what to record.
 
 1. Portrait picture, and the track agrees. Record the raw stream. Best quality, nothing to do.
-2. Portrait picture, but the track says landscape. This is iOS 18. The recorder would write the sideways buffer with no rotation flag, so draw the picture to a canvas at its own size and record the canvas stream instead.
+2. Portrait picture, but the track says landscape. This is what iOS 26.6 and Android Chrome both did to me. The recorder would write the sideways buffer with no rotation flag, so draw the picture to a canvas at its own size and record the canvas stream instead.
 3. Wide picture on a portrait screen. Some Android devices. Record what the preview shows, the centre cut to 9:16 at the frame's own height.
 
 ```ts
