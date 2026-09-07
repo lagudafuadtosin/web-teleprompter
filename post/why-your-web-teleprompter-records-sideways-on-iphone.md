@@ -25,7 +25,7 @@ navigator.mediaDevices.getUserMedia({
 
 The preview on screen was portrait and looked right, so I recorded. The file came back landscape, on its side, and badly off. On iOS Safari and on Android Chrome that request gives you the sensor's wide preset, 1920 by 1080, unrotated. `exact` instead of `ideal` gave the same thing or an error. `aspectRatio: 9/16` gave the same thing. The phone does not have a portrait preset. It has landscape presets and it rotates the picture on screen to match how the phone is held, and the recorder saves the unrotated one.
 
-That is the bug. Ask for portrait, get a file that plays on its side.
+That is the bug. Ask for portrait, get a landscape file.
 
 ## Wrong theory two: make it portrait myself
 
@@ -89,7 +89,7 @@ rec.onstop = () => plan.stop()
 
 ## The bug report
 
-I filed it as [WebKit bug 323550](https://bugs.webkit.org/show_bug.cgi?id=323550). Apple's triage retitled it a regression the same day, imported it to Radar, and added three engineers. The history, from their own tracker: WebKit's MP4 recorder has written a rotation transform into the file since a [2020 fix](https://bugs.webkit.org/show_bug.cgi?id=198912), and Apple's [April 2025 commit](https://commits.webkit.org/294257@main) for the WebM fix still describes mp4 as carrying that metadata. Reports of sideways front camera files start in June 2025 on an [Apple Developer Forums thread](https://developer.apple.com/forums/thread/786803). Then I ran ffprobe on my own sideways file, and it is not missing the note. The frames inside are already portrait, 1080 by 1920, and the file also carries a displaymatrix of minus 90 degrees. Photos does what the note says and turns an upright picture onto its side. The file is rotated twice, once in the pixels and once in the note. The same page with the fix produces a file with no note, and it plays upright.
+I filed it as [WebKit bug 323550](https://bugs.webkit.org/show_bug.cgi?id=323550). Apple's triage retitled it a regression the same day, imported it to Radar, and added three engineers. The history, from their own tracker: WebKit's MP4 recorder has written a rotation transform into the file since a [2020 fix](https://bugs.webkit.org/show_bug.cgi?id=198912), and Apple's [April 2025 commit](https://commits.webkit.org/294257@main) for the WebM fix still describes mp4 as carrying that metadata. Reports of sideways front camera files start in June 2025 on an [Apple Developer Forums thread](https://developer.apple.com/forums/thread/786803). Then I ran ffprobe on my own file. It carries a displaymatrix of minus 90 degrees, and with it the file plays upright, in landscape. The same page with the fix produces a file with no note, and it plays upright in portrait.
 
 ## Why I was doing this at all
 
