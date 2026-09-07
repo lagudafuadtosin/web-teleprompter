@@ -23,25 +23,27 @@ navigator.mediaDevices.getUserMedia({
 })
 ```
 
-On iOS Safari and on Android Chrome that gives you the sensor's wide preset, 1920 by 1080, unrotated. `exact` instead of `ideal` gave the same thing or an error. `aspectRatio: 9/16` gave the same thing. The phone does not have a portrait preset. It has landscape presets and it rotates the picture to match how the phone is held.
+The preview on screen was portrait and looked right, so I recorded. The file came back landscape, on its side, and badly off. On iOS Safari and on Android Chrome that request gives you the sensor's wide preset, 1920 by 1080, unrotated. `exact` instead of `ideal` gave the same thing or an error. `aspectRatio: 9/16` gave the same thing. The phone does not have a portrait preset. It has landscape presets and it rotates the picture on screen to match how the phone is held, and the recorder saves the unrotated one.
 
-So ask in landscape numbers.
+That is the bug. Ask for portrait, get a landscape file with nothing in it telling the player to turn it.
+
+## Wrong theory two: make it portrait myself
+
+If the file is landscape, cut a portrait out of it. I recorded through a canvas that always took the centre 9:16 out of the reported size. That gave a 608 by 1080 slice out of a 1080 by 1920 picture, a three times zoom of an eye and a nose. That was the "zoomed in" half of the bug, and it was entirely mine.
+
+## What fixed it: ask in landscape numbers
+
+I only tried this to check the picture quality. I asked for landscape, expecting a landscape file I could at least look at, and the file came out portrait.
 
 ```js
 { video: { facingMode: 'user', width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { ideal: 30 } } }
 ```
 
-That is what the WebRTC samples do, which I found out after two nights, not before. Read the samples first.
+Ask for landscape and you get portrait, because the phone picks a real preset and turns the picture to match how it is held. That is what the WebRTC samples do, which I found out after two nights, not before. Read the samples first.
 
-## Wrong theory two: the rotation is in the metadata
+## Belt and braces: measure the picture, not the track
 
-It used to be. WebKit's MP4 recorder has written a rotation and mirror transform into the file since a [2020 fix](https://bugs.webkit.org/show_bug.cgi?id=198912), and as late as April 2025 Apple's own [commit message](https://commits.webkit.org/294257@main) for the WebM fix says that mp4, unlike WebM, carries metadata telling the player to rotate. On my iPhone 15 on iOS 26.6 that flag is gone. The file is the sideways buffer and nothing tells the player to turn it, and Android Chrome gave me the same sideways file. An [Apple Developer Forums thread](https://developer.apple.com/forums/thread/786803) has people finding the same from June 2025, one of them noting the file used to show a displaymatrix rotation of minus 90 and now shows nothing. I filed it as [WebKit bug 323550](https://bugs.webkit.org/show_bug.cgi?id=323550), and Apple triaged it as a regression the same day.
-
-I spent a while looking for a way to read the rotation off the track. There is nothing to read. `getSettings()` gives you width 1920 and height 1080 and that is that.
-
-## What is actually true: the track lies, the picture does not
-
-The video track reports the sensor buffer. The frame the browser draws into the `<video>` element is already rotated, which is why the preview always looked right. So do not trust the reported size. Measure the drawn picture.
+Even with the landscape request, the video track reports the sensor size. `getSettings()` says width 1920 and height 1080 while the frame on screen is portrait. So the shipped code does not trust the reported size. It draws one frame onto a sixteen pixel canvas and looks at which corner got paint.
 
 ```ts
 function measureDrawnFrame(video, reportedW, reportedH) {
@@ -63,18 +65,10 @@ function measureDrawnFrame(video, reportedW, reportedH) {
 }
 ```
 
-Draw one frame at natural size, scaled down onto a sixteen pixel square, and see which corner got paint. If the bottom left is painted and the top right is not, the picture is tall. That is the whole probe.
-
-## Wrong theory three: crop everything to 9:16
-
-Before I had the probe, I recorded through a canvas that always cut the centre 9:16 out of the reported size. On iOS 26.6 and on Android the picture was already portrait, so that cut a 608 by 1080 slice out of a 1080 by 1920 frame. A three times zoom of an eye and a nose. That was the "zoomed in" half of the bug, and it was entirely mine.
-
-## The fix: three cases
-
-With the probe you can decide what to record.
+If the bottom left is painted and the top right is not, the picture is tall. That is the whole probe. With it the recorder picks one of three plans.
 
 1. Portrait picture, and the track agrees. Record the raw stream. Best quality, nothing to do.
-2. Portrait picture, but the track says landscape. This is what iOS 26.6 and Android Chrome both did to me. The recorder would write the sideways buffer with no rotation flag, so draw the picture to a canvas at its own size and record the canvas stream instead.
+2. Portrait picture, but the track says landscape. Draw the picture to a canvas at its own size and record the canvas stream.
 3. Wide picture on a portrait screen. Some Android devices. Record what the preview shows, the centre cut to 9:16 at the frame's own height.
 
 ```ts
@@ -92,6 +86,10 @@ rec.onstop = () => plan.stop()
 ```ts
 'video/mp4;codecs=avc1.640028,mp4a.40.2'
 ```
+
+## The bug report
+
+I filed it as [WebKit bug 323550](https://bugs.webkit.org/show_bug.cgi?id=323550). Apple's triage retitled it a regression the same day, imported it to Radar, and added three engineers. The history, from their own tracker: WebKit's MP4 recorder has written a rotation transform into the file since a [2020 fix](https://bugs.webkit.org/show_bug.cgi?id=198912), and Apple's [April 2025 commit](https://commits.webkit.org/294257@main) for the WebM fix still describes mp4 as carrying that metadata. Reports of it missing on the front camera start in June 2025 on an [Apple Developer Forums thread](https://developer.apple.com/forums/thread/786803). My file plays sideways in Photos, which honours the rotation note when it is there.
 
 ## Why I was doing this at all
 
