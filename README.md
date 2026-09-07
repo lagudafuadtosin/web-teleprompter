@@ -57,7 +57,7 @@ rec.onstop = () => plan.stop()
 - Read mode: three text sizes, speed slider, tap the text to pause, Restart, Mirror for a beam-splitter rig, Cues toggle, a wake lock so the screen does not dim mid-take, keyboard control on a laptop.
 - Record mode: front camera behind the script, 3-2-1 countdown, Record and Stop with a timer, review the take, Share / Save through the share sheet, Download as a fallback, Record again.
 - The text starts below the screen and rises, so nothing is on screen before the reader has read it. A faint reading line sits a third of the way down.
-- Formats: Safari records `video/mp4` (uploads straight to TikTok and Instagram). Chrome on Android usually records `video/webm`, which those apps may not accept directly; the share sheet route usually handles it, the download route may not. The UI says so rather than hiding it.
+- Formats: Safari records `video/mp4` (uploads straight to TikTok and Instagram). Chrome on Android usually records `video/webm`, which those apps may not accept directly. The share sheet route usually handles it, the download route may not. The UI says so rather than hiding it.
 - Serve over HTTPS or localhost: camera access needs a secure context. Add `Permissions-Policy: camera=(self), microphone=(self)` if your host sends a restrictive policy.
 
 ## Licence
