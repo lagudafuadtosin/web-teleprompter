@@ -35,7 +35,7 @@ That is what the WebRTC samples do, which I found out after two nights, not befo
 
 ## Wrong theory two: the rotation is in the metadata
 
-On older iOS, a recording made this way came out as a landscape buffer with a `displaymatrix` rotation of minus 90 degrees in the file. Players honoured it. On iOS 26.6, which is what my iPhone runs, that flag is gone, and Android Chrome gave me the same sideways file. The file is the sideways buffer and nothing tells the player to turn it. There is an [Apple Developer Forums thread](https://developer.apple.com/forums/thread/786803) with people finding the same thing.
+It used to be. WebKit's MP4 recorder has written a rotation and mirror transform into the file since a [2020 fix](https://bugs.webkit.org/show_bug.cgi?id=198912), and as late as April 2025 Apple's own [commit message](https://commits.webkit.org/294257@main) for the WebM fix says that mp4, unlike WebM, carries metadata telling the player to rotate. On my iPhone 15 on iOS 26.6 that flag is gone. The file is the sideways buffer and nothing tells the player to turn it, and Android Chrome gave me the same sideways file. An [Apple Developer Forums thread](https://developer.apple.com/forums/thread/786803) has people finding the same from June 2025, one of them noting the file used to show a displaymatrix rotation of minus 90 and now shows nothing. I filed it as [WebKit bug 323550](https://bugs.webkit.org/show_bug.cgi?id=323550), and Apple triaged it as a regression the same day.
 
 I spent a while looking for a way to read the rotation off the track. There is nothing to read. `getSettings()` gives you width 1920 and height 1080 and that is that.
 
