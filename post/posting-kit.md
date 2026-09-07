@@ -38,7 +38,7 @@ https://developer.apple.com/forums/thread/786803
 
 Reply:
 
-Same finding here on iPhone with iOS 26.6, and Android Chrome does the same: the track reports 1920x1080, the drawn frame is portrait, and the file has no displaymatrix. Two things worked for me. Request the camera in landscape numbers (width 1920, height 1080), which makes Safari rotate the picture itself. Then probe the drawn frame by drawing one frame of the video element onto a small canvas and checking which way it extends, and if the track and the picture disagree, record a canvas stream of the picture rather than the raw track. Working code, MIT: https://github.com/lagudafuadtosin/web-teleprompter (src/lib/camera.ts).
+Same finding here on iPhone with iOS 26.6, and Android Chrome does the same: the track reports 1920x1080, the drawn frame is portrait, and the file comes out landscape (7 Sep correction: the file does carry a displaymatrix and plays upright but wide). Two things worked for me. Request the camera in landscape numbers (width 1920, height 1080), which makes Safari rotate the picture itself. Then probe the drawn frame by drawing one frame of the video element onto a small canvas and checking which way it extends, and if the track and the picture disagree, record a canvas stream of the picture rather than the raw track. Working code, MIT: https://github.com/lagudafuadtosin/web-teleprompter (src/lib/camera.ts).
 
 ## 6. GitHub, comment on collab-project/videojs-record issue 370
 
@@ -46,7 +46,7 @@ https://github.com/collab-project/videojs-record/issues/370
 
 Comment:
 
-For anyone still hitting this: on iOS 26.6 and on Android Chrome the track reports the landscape sensor buffer while the browser draws the rotated portrait frame, and the rotation flag is no longer written to the file. Asking for width 1920 and height 1080 (not 1080 by 1920) gets Safari to rotate the picture, and when the reported size and the drawn frame still disagree, recording through a canvas of the drawn frame gives a correct file. Standalone code here: https://github.com/lagudafuadtosin/web-teleprompter/blob/master/src/lib/camera.ts
+For anyone still hitting this: on iOS 26.6 and on Android Chrome the track reports the landscape sensor buffer while the browser draws the rotated portrait frame, so the file comes out landscape, not the portrait you saw (7 Sep correction: the rotation flag is present, the file plays upright but wide). Asking for width 1920 and height 1080 (not 1080 by 1920) gets Safari to rotate the picture, and when the reported size and the drawn frame still disagree, recording through a canvas of the drawn frame gives a correct file. Standalone code here: https://github.com/lagudafuadtosin/web-teleprompter/blob/master/src/lib/camera.ts
 
 ## 7. LinkedIn
 
@@ -60,9 +60,11 @@ Why it exists: Postbarrel asks you questions about what you want to say, writes 
 
 If you build for phone browsers, the write-up will save you a night: (dev.to link)
 
-## 8. X, one post
+## 8. X, dropped 6 Sep (not signed in, no reach). Replaced by a comment on WebKit bug 290223 with the dev.to link.
 
-Three nights on one bug: iOS 26.6 and Android Chrome report a landscape camera track while drawing a portrait frame, and iOS dropped the rotation flag, so browser recordings come out sideways. Fixed it, open sourced it, dead ends included. https://github.com/lagudafuadtosin/web-teleprompter
+Original X text, kept for reference:
+
+Three nights on one bug: iOS 26.6 and Android Chrome report a landscape camera track while drawing a portrait frame, so browser recordings come out landscape when you asked for portrait. Fixed it, open sourced it, dead ends included. https://github.com/lagudafuadtosin/web-teleprompter
 
 ## What to screenshot for the file
 
