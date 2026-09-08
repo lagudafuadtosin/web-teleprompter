@@ -11,7 +11,7 @@ If you have ever asked `getUserMedia` for a portrait video on a phone and got a 
 
 ## The setup
 
-A phone, held upright, front camera. The page asks for the camera, shows the preview in a `<video>`, and records with `MediaRecorder`. Nothing exotic. The preview looked right. The file did not.
+A phone, held upright, front camera. The page asks for the camera, shows the preview in a `<video>`, and records with `MediaRecorder`. Nothing exotic. The preview looked a bit off to me. I had my suspicions, felt it was all in my head, and recorded anyway. The file was wrong.
 
 ## Wrong theory one: I need to ask for portrait
 
@@ -23,7 +23,7 @@ navigator.mediaDevices.getUserMedia({
 })
 ```
 
-The preview on screen was portrait and looked right, so I recorded. The file came back landscape, on its side, and badly off. On iOS Safari and on Android Chrome that request gives you the sensor's wide preset, 1920 by 1080, unrotated. `exact` instead of `ideal` gave the same thing or an error. `aspectRatio: 9/16` gave the same thing. The phone does not have a portrait preset. It has landscape presets and it rotates the picture on screen to match how the phone is held, and the recorder saves the unrotated one.
+The preview on screen was portrait, but it looked funny to me. I had my suspicions, felt it was all in my head, and recorded anyway. The file came back landscape, on its side, and badly off. On iOS 26.6 Safari and on Android 15 Chrome that request gives you the sensor's wide preset, 1920 by 1080, unrotated. `exact` instead of `ideal` gave the same thing or an error. `aspectRatio: 9/16` gave the same thing. The phone does not have a portrait preset. It has landscape presets and it rotates the picture on screen to match how the phone is held, and the recorder saves the unrotated one.
 
 That is the bug. Ask for portrait, get a landscape file.
 
