@@ -32,4 +32,4 @@ Why HalfStack: it is a "here is how I made a thing, here is what the platform di
 
 Length: 20 minutes.
 
-The founder story. Nigerian, came to the UK for a Master's, built the teleprompter I could not buy, then the product around it. Launch day is 15 September 2026. What building alone actually costs, what the browser did to me, what shipped, and what the numbers said. For a room that likes side projects that became the main project.
+The founder story. Nigerian, came to the UK for a Master's, built the teleprompter I could not buy, then the product around it. Live since September 2026. What building alone actually costs, what the browser did to me, what shipped, and what the numbers said. For a room that likes side projects that became the main project.
