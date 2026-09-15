@@ -9,13 +9,20 @@ export type DrawnFrame = { w: number; h: number }
 // frame. Asked for portrait, the recorder gives the 1920x1080 sensor frame back, with a
 // rotation note so it plays upright but wide (WebKit bug 323550). Not the portrait you saw.
 // So we draw one frame onto a 16px canvas and look at where the paint lands.
+// The track corrects itself once the first frame is drawn, about 100 to 400 ms after the stream
+// arrives (livekit/client-sdk-js #2099), which is why this reads the picture and not the track.
+// Ready-state guard and two pixel inset on the corner samples: Mike Aroworade (@mikearoworade), PR #1.
 export function measureDrawnFrame(video: HTMLVideoElement, reportedW: number, reportedH: number): DrawnFrame | null {
   // Wrong theory 1: read the rotation from the track. There is nothing to read.
   //   const angle = (video.srcObject as MediaStream).getVideoTracks()[0].getSettings().rotation
   // Wrong theory 2: the sensor is square, so width and height are the same thing.
   //   if (reportedW === reportedH) return { w: reportedW, h: reportedH }
   try {
+    // No frame yet, nothing to measure. Say so rather than read an empty canvas.
+    if (video.readyState < 2) return null
+
     const big = Math.max(reportedW, reportedH)
+    const small = Math.min(reportedW, reportedH)
     const S = 16
     const c = document.createElement('canvas')
     c.width = S
@@ -29,10 +36,12 @@ export function measureDrawnFrame(video: HTMLVideoElement, reportedW: number, re
     ctx.restore()
     const px = ctx.getImageData(0, 0, S, S).data
     const painted = (x: number, y: number) => px[(y * S + x) * 4 + 3] > 0
-    const wide = painted(S - 1, 1) && !painted(1, S - 1)
-    const tall = painted(1, S - 1) && !painted(S - 1, 1)
-    if (wide) return { w: big, h: Math.min(reportedW, reportedH) }
-    if (tall) return { w: Math.min(reportedW, reportedH), h: big }
+    // Sample two pixels in from each edge, not the last pixel, so a one pixel rounding
+    // artefact at the boundary cannot flip the answer.
+    const wide = painted(S - 2, 2) && !painted(2, S - 2)
+    const tall = painted(2, S - 2) && !painted(S - 2, 2)
+    if (wide) return { w: big, h: small }
+    if (tall) return { w: small, h: big }
     return null
   } catch {
     return null
